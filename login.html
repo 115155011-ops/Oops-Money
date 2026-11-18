@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oops Money ── 載具消費紀錄圖像化系統</title>
+  <style>
+    :root {
+      --primary-color: #BA3D1D;       /* Figma Burnt Orange / Terracotta */
+      --primary-hover: #A03316;
+      --bg-page: #ECE8E1;             /* Warm soft background */
+      --bg-app: #FAF8F5;              /* Phone body background */
+      --bg-card: #FFFFFF;
+      --card-peach: #FBE8DC;          /* Figma Peach highlight */
+      --card-peach-border: #F5D5C3;
+      --text-main: #1A1A1A;
+      --text-sub: #757575;
+      --text-muted: #9E9E9E;
+      --border-light: #EFECE6;
+      --border-card: #E8E4DC;
+      --accent-green: #2E7D32;
+      --tag-red: #D32F2F;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--bg-page);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* Figma Phone Container */
+    .mobile-frame {
+      width: 100%;
+      max-width: 414px;
+      height: 840px;
+      background: var(--bg-app);
+      border-radius: 44px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 44px;
+      padding: 12px 24px 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      z-index: 10;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    /* Main Login Content */
+    .login-container {
+      flex: 1;
+      padding: 32px 24px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+    }
+
+    .brand-header {
+      width: 100%;
+    }
+
+    .brand-sub {
+      font-size: 13px;
+      color: var(--text-sub);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .brand-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .slogan-capsule {
+      display: inline-block;
+      background: #FFFFFF;
+      border: 1px solid var(--border-card);
+      color: var(--primary-color);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    /* Hero Card in Figma Style */
+    .hero-card-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px 0;
+    }
+
+    .figma-preview-card {
+      width: 100%;
+      background: var(--card-peach);
+      border-radius: 24px;
+      padding: 24px 20px;
+      position: relative;
+      border: 1px solid var(--card-peach-border);
+      box-shadow: 0 8px 20px rgba(186, 61, 29, 0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .camera-circle-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 34px;
+      height: 34px;
+      background: #FFFFFF;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      color: #555;
+    }
+
+    .figma-illustration-box {
+      width: 120px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-footer-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      padding-top: 14px;
+    }
+
+    .card-footer-sub {
+      font-size: 11px;
+      color: var(--text-sub);
+      font-weight: 500;
+    }
+
+    /* Features Brief */
+    .feature-tags-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .feature-tag {
+      background: #FFFFFF;
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 6px 12px;
+      font-size: 11px;
+      color: var(--text-sub);
+      font-weight: 600;
+    }
+
+    /* Actions */
+    .action-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-login {
+      width: 100%;
+      background: var(--primary-color);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 28px;
+      padding: 16px 20px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 18px rgba(186, 61, 29, 0.28);
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-login:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    .login-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .home-indicator {
+      width: 134px;
+      height: 5px;
+      background: #D1D1D6;
+      border-radius: 100px;
+      margin: 8px auto 6px auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-frame">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>16:09</span>
+      <div class="status-icons">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="none">
+          <path d="M1 9.5H3M5 7H7M9 4.5H11M13 1.5H15" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg width="15" height="11" viewBox="0 0 16 12" fill="#1A1A1A">
+          <path d="M8 2.5C4.7 2.5 1.8 3.9 0 6.1L8 15.5L16 6.1C14.2 3.9 11.3 2.5 8 2.5Z" transform="translate(0 -2) scale(0.8)"/>
+        </svg>
+        <svg width="24" height="12" viewBox="0 0 25 12" fill="none">
+          <rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#1A1A1A"/>
+          <rect x="2" y="2" width="16" height="8" rx="2" fill="#1A1A1A"/>
+          <path d="M23 4V8" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Login Content -->
+    <div class="login-container">
+      <div class="brand-header">
+        <div class="brand-sub">載具消費紀錄圖像化系統</div>
+        <h1 class="brand-title">Oops Money</h1>
+        <div class="slogan-capsule">Less Oops, More Value</div>
+      </div>
+
+      <!-- Hero Card styled directly from Figma 介面樣式 -->
+      <div class="hero-card-section">
+        <div class="figma-preview-card">
+          <div class="camera-circle-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+          </div>
+
+          <div class="figma-illustration-box">
+            <!-- Delivery Takeout Bag & Coffee Illustration from Figma -->
+            <svg width="86" height="96" viewBox="0 0 86 96" fill="none">
+              <rect x="13" y="22" width="60" height="66" rx="8" fill="#FFFFFF"/>
+              <path d="M13 36h60v52H13z" fill="#FBF8F5"/>
+              <path d="M20 22l6-14h34l6 14" stroke="#BA3D1D" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="43" cy="56" r="14" fill="#BA3D1D"/>
+              <rect x="36" y="49" width="14" height="14" rx="3" fill="#FFFFFF"/>
+            </svg>
+          </div>
+
+          <div class="card-footer-bar">
+            <span>UBER EATS $350</span>
+            <span class="card-footer-sub">週三 01:30 ‧ 點擊翻面</span>
+          </div>
+        </div>
+
+        <div class="feature-tags-row">
+          <div class="feature-tag">載具轉化圖像</div>
+          <div class="feature-tag">微反思卡片</div>
+          <div class="feature-tag">雙面翻轉評分卡</div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="action-section">
+        <button class="btn-login" onclick="handleLogin()">
+          <span>一鍵體驗登入</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+        <div class="login-hint">載具已同步 ‧ 免去手動記帳的麻煩步驟</div>
+      </div>
+    </div>
+
+    <!-- Home Indicator -->
+    <div class="home-indicator"></div>
+  </div>
+
+  <script>
+    // Initialize LocalStorage with the 8 Mock Items matching Figma and prompt
+    function initializeMockData() {
+      const STORAGE_KEY = 'oops_money_dataset';
+
+      const defaultData = [
+        {
+          id: 'item-1',
+          store: '全家',
+          name: '美式咖啡與麵包',
+          dateGroup: '11 月 11 日 週三',
+          timeFormatted: '2026/11/11 ‧ 08:12',
+          timeDay: '週三 08:12',
+          category: '超商零食',
+          amount: 85,
+          imageType: 'coffee',
+          status: 'pending',
+          rating: null,
+          notes: ''
+        },
+        {
+          id: 'item-2',
+          store: '鼎泰豐',
+          name: '小籠包與蝦仁炒飯',
+          originalRawName: '餐費',
+          dateGroup: '11 月 11 日 週三',
+          timeFormatted: '2026/11/11 ‧ 12:20',
+          timeDay: '週三 12:20',
+          category: '外食',
+          amount: 1200,
+          imageType: 'dumplings',
+          status: 'completed',
+          rating: '正常',
+          notes: '跟朋友聚餐，份量剛好但稍貴。'
+        },
+        {
+          id: 'item-3',
+          store: '得正',
+          name: '手搖飲',
+          dateGroup: '11 月 11 日 週三',
+          timeFormatted: '2026/11/11 ‧ 15:40',
+          timeDay: '週三 15:40',
+          category: '手搖飲',
+          amount: 65,
+          imageType: 'boba',
+          status: 'completed',
+          rating: '值得',
+          notes: '提神飲品，微糖微冰很順口。'
+        },
+        {
+          id: 'item-4',
+          store: '寶雅',
+          name: '保養品',
+          dateGroup: '11 月 10 日 週二',
+          timeFormatted: '2026/11/10 ‧ 19:05',
+          timeDay: '週二 19:05',
+          category: '生活',
+          amount: 115,
+          imageType: 'skincare',
+          status: 'completed',
+          rating: '正常',
+          notes: '日常消耗品補貨。'
+        },
+        {
+          id: 'item-5',
+          store: 'UBER EATS',
+          name: '深夜外送',
+          dateGroup: '11 月 10 日 週二',
+          timeFormatted: '2026/11/10 ‧ 01:30',
+          timeDay: '週三 01:30',
+          category: '深夜外送',
+          amount: 350,
+          imageType: 'delivery',
+          status: 'pending',
+          rating: null,
+          notes: ''
+        },
+        {
+          id: 'item-6',
+          store: '蝦皮購物',
+          name: '網購衣服',
+          dateGroup: '11 月 09 日 週一',
+          timeFormatted: '2026/11/09 ‧ 23:45',
+          timeDay: '週一 23:45',
+          category: '網購衣服',
+          amount: 790,
+          imageType: 'clothes',
+          status: 'completed',
+          rating: '後悔',
+          notes: '材質粗糙刺膚，穿一次就收進衣櫃，真的不該半夜亂買。'
+        },
+        {
+          id: 'item-7',
+          store: '星巴克',
+          name: '拿鐵',
+          dateGroup: '11 月 08 日 週日',
+          timeFormatted: '2026/11/08 ‧ 14:10',
+          timeDay: '週日 14:10',
+          category: '咖啡',
+          amount: 85,
+          imageType: 'latte',
+          status: 'completed',
+          rating: '值得',
+          notes: '工作提神必備，下午喝完效率大增。'
+        },
+        {
+          id: 'item-8',
+          store: 'PChome 24h購物',
+          name: '3C 配件',
+          dateGroup: '11 月 07 日 週六',
+          timeFormatted: '2026/11/07 ‧ 16:30',
+          timeDay: '週六 16:30',
+          category: '3C 配件',
+          amount: 1280,
+          imageType: 'gadget',
+          status: 'pending',
+          rating: null,
+          notes: ''
+        }
+      ];
+
+      // Reset or set initial data
+      if (!localStorage.getItem(STORAGE_KEY)) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
+      }
+    }
+
+    function handleLogin() {
+      initializeMockData();
+      window.location.href = 'app.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', initializeMockData);
+  </script>
+</body>
+</html>

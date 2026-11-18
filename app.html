@@ -1,0 +1,2217 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oops Money ── 載具消費紀錄圖像化系統</title>
+  <style>
+    :root {
+      --primary: #0F172A;
+      --primary-light: #1E293B;
+      --accent-blue: #3B82F6;
+      --accent-green: #10B981;
+      --accent-amber: #F59E0B;
+      --accent-coral: #EF4444;
+      --bg-page: #0B0F19;
+      --bg-app: #F8FAFC;
+      --bg-card: #FFFFFF;
+      --border-subtle: #E2E8F0;
+      --text-main: #0F172A;
+      --text-sub: #64748B;
+      --text-muted: #94A3B8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 15%, #1e293b 0%, #080c14 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      color: var(--text-main);
+    }
+
+    /* Outer Phone Frame */
+    .phone-container {
+      width: 100%;
+      max-width: 414px;
+      height: 870px;
+      background: var(--bg-app);
+      border-radius: 46px;
+      box-shadow: 0 25px 70px -15px rgba(0, 0, 0, 0.7), 0 0 0 10px #1E293B, 0 0 0 12px #334155;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 44px;
+      padding: 12px 24px 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #0F172A;
+      background: var(--bg-app);
+      z-index: 50;
+      flex-shrink: 0;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    /* Top App Navigation / Bar */
+    .top-app-bar {
+      padding: 6px 20px 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-app);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+      flex-shrink: 0;
+      z-index: 40;
+    }
+
+    .brand-logo-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-logo-badge {
+      width: 28px;
+      height: 28px;
+      background: #0F172A;
+      color: #FFFFFF;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .brand-logo-text {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0F172A;
+      letter-spacing: -0.3px;
+    }
+
+    .slogan-tag {
+      font-size: 10px;
+      color: #64748B;
+      font-weight: 600;
+      background: #F1F5F9;
+      padding: 3px 7px;
+      border-radius: 6px;
+    }
+
+    .api-sync-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #059669;
+      background: #ECFDF5;
+      padding: 4px 8px;
+      border-radius: 12px;
+      border: 1px solid #A7F3D0;
+    }
+
+    .sync-dot {
+      width: 6px;
+      height: 6px;
+      background: #10B981;
+      border-radius: 50%;
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    /* Main Scrollable View Area */
+    .app-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 16px 20px 84px 20px;
+      position: relative;
+    }
+
+    /* Custom Scrollbar */
+    .app-content::-webkit-scrollbar {
+      width: 4px;
+    }
+    .app-content::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+
+    /* Bottom Fixed Navigation Bar (4 Tabs) */
+    .bottom-nav-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 72px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid #E2E8F0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 10px 10px 10px;
+      z-index: 60;
+    }
+
+    .nav-tab-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: #94A3B8;
+      cursor: pointer;
+      padding: 6px 0;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .nav-tab-btn.active {
+      color: #0F172A;
+    }
+
+    .nav-tab-btn.active svg {
+      stroke: #0F172A;
+      transform: translateY(-1px);
+    }
+
+    .nav-tab-icon {
+      width: 22px;
+      height: 22px;
+      transition: transform 0.2s ease;
+    }
+
+    .nav-tab-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .badge-counter {
+      position: absolute;
+      top: 2px;
+      right: 22%;
+      background: #EF4444;
+      color: #FFFFFF;
+      font-size: 10px;
+      font-weight: 800;
+      min-width: 16px;
+      height: 16px;
+      line-height: 16px;
+      text-align: center;
+      border-radius: 8px;
+      padding: 0 4px;
+    }
+
+    /* Page View Containers */
+    .tab-view {
+      display: none;
+      animation: fadeInView 0.25s ease-out;
+    }
+
+    .tab-view.active-view {
+      display: block;
+    }
+
+    @keyframes fadeInView {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Section Titles & Headers */
+    .view-header {
+      margin-bottom: 16px;
+    }
+
+    .view-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 4px;
+    }
+
+    .view-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0F172A;
+      letter-spacing: -0.4px;
+    }
+
+    .view-subtitle {
+      font-size: 12px;
+      color: #64748B;
+      font-weight: 500;
+    }
+
+    .btn-action-sm {
+      background: #0F172A;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .btn-action-sm:hover {
+      background: #1E293B;
+    }
+
+    /* Alert Notice Banner */
+    .system-notice-card {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #1E40AF;
+    }
+
+    .system-notice-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .btn-notice-dismiss {
+      background: none;
+      border: none;
+      color: #3B82F6;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 11px;
+      text-decoration: underline;
+    }
+
+    /* Segmented Controls / Filter Chips */
+    .filter-chips-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .filter-chips-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      color: #64748B;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-chip.active {
+      background: #0F172A;
+      color: #FFFFFF;
+      border-color: #0F172A;
+    }
+
+    /* 每日消費圖片庫 (Gallery Grid) */
+    .gallery-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .receipt-card {
+      background: #FFFFFF;
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid #F1F5F9;
+      box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .receipt-card:hover {
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+      border-color: #E2E8F0;
+    }
+
+    .receipt-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .store-label-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .store-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .category-badge {
+      font-size: 10px;
+      font-weight: 700;
+      background: #F1F5F9;
+      color: #475569;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    .rating-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    .rating-worth {
+      background: #ECFDF5;
+      color: #059669;
+      border: 1px solid #A7F3D0;
+    }
+
+    .rating-normal {
+      background: #EFF6FF;
+      color: #2563EB;
+      border: 1px solid #BFDBFE;
+    }
+
+    .rating-waste {
+      background: #FEF2F2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+    }
+
+    .rating-pending {
+      background: #F8FAFC;
+      color: #94A3B8;
+      border: 1px solid #E2E8F0;
+    }
+
+    .receipt-card-body {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .receipt-image-container {
+      width: 76px;
+      height: 76px;
+      border-radius: 14px;
+      background: #F8FAFC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+      border: 1px solid #F1F5F9;
+      position: relative;
+    }
+
+    .receipt-details-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .item-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0F172A;
+      line-height: 1.3;
+    }
+
+    .invoice-time {
+      font-size: 11px;
+      color: #64748B;
+    }
+
+    .item-amount {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0F172A;
+      margin-top: 2px;
+    }
+
+    .receipt-reflection-preview {
+      font-size: 12px;
+      color: #475569;
+      background: #F8FAFC;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border-left: 3px solid #CBD5E1;
+      line-height: 1.4;
+    }
+
+    .receipt-card-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 8px;
+      border-top: 1px dashed #F1F5F9;
+      font-size: 11px;
+    }
+
+    .action-btn-link {
+      background: none;
+      border: none;
+      color: #3B82F6;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .action-btn-link:hover {
+      background: #EFF6FF;
+    }
+
+    .action-btn-secondary {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      color: #475569;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .action-btn-secondary:hover {
+      background: #F1F5F9;
+    }
+
+    /* TAB 2: 消費反思 (Reflection Views) */
+    .reflection-toggle-tabs {
+      display: flex;
+      background: #E2E8F0;
+      padding: 3px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+
+    .reflection-toggle-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: none;
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748B;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .reflection-toggle-btn.active {
+      background: #FFFFFF;
+      color: #0F172A;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Swipeable Micro Reflection Deck */
+    .swipe-card-wrapper {
+      position: relative;
+      width: 100%;
+      min-height: 430px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .swipe-card {
+      width: 100%;
+      background: #FFFFFF;
+      border-radius: 24px;
+      padding: 20px;
+      border: 1px solid #F1F5F9;
+      box-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+      touch-action: pan-y;
+    }
+
+    .swipe-card.swiping-left {
+      transform: translateX(-40px) rotate(-4deg);
+      border-color: #FECACA;
+    }
+
+    .swipe-card.swiping-right {
+      transform: translateX(40px) rotate(4deg);
+      border-color: #A7F3D0;
+    }
+
+    .swipe-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .swipe-badge-status {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6366F1;
+      background: #EEF2FF;
+      padding: 3px 10px;
+      border-radius: 10px;
+      border: 1px solid #E0E7FF;
+    }
+
+    .swipe-main-visual {
+      width: 100%;
+      height: 140px;
+      background: #F8FAFC;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #F1F5F9;
+    }
+
+    .swipe-info-area {
+      text-align: center;
+    }
+
+    .swipe-store-name {
+      font-size: 13px;
+      color: #64748B;
+      font-weight: 600;
+    }
+
+    .swipe-item-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0F172A;
+      margin: 4px 0;
+    }
+
+    .swipe-price {
+      font-size: 24px;
+      font-weight: 900;
+      color: #0F172A;
+    }
+
+    .swipe-input-box {
+      width: 100%;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #0F172A;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: none;
+      height: 60px;
+    }
+
+    .swipe-input-box:focus {
+      border-color: #3B82F6;
+    }
+
+    .swipe-actions-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .swipe-btn {
+      flex: 1;
+      padding: 12px 6px;
+      border-radius: 14px;
+      border: 1.5px solid transparent;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .swipe-btn-waste {
+      background: #FEF2F2;
+      color: #DC2626;
+      border-color: #FECACA;
+    }
+
+    .swipe-btn-waste:hover {
+      background: #FEE2E2;
+      transform: translateY(-2px);
+    }
+
+    .swipe-btn-normal {
+      background: #EFF6FF;
+      color: #2563EB;
+      border-color: #BFDBFE;
+    }
+
+    .swipe-btn-normal:hover {
+      background: #DBEAFE;
+      transform: translateY(-2px);
+    }
+
+    .swipe-btn-worth {
+      background: #ECFDF5;
+      color: #059669;
+      border-color: #A7F3D0;
+    }
+
+    .swipe-btn-worth:hover {
+      background: #D1FAE5;
+      transform: translateY(-2px);
+    }
+
+    .empty-state-card {
+      background: #FFFFFF;
+      border-radius: 24px;
+      padding: 40px 24px;
+      text-align: center;
+      border: 1px dashed #CBD5E1;
+      width: 100%;
+    }
+
+    /* 雙面翻轉評分卡 (Flip Cards) */
+    .flip-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .flip-card-scene {
+      width: 100%;
+      height: 180px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+      border-radius: 20px;
+    }
+
+    .flip-card-scene.is-flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      background: #FFFFFF;
+      padding: 16px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 4px 15px rgba(15, 23, 42, 0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .flip-card-front {
+      z-index: 2;
+    }
+
+    .flip-card-back {
+      transform: rotateY(180deg);
+      background: #F8FAFC;
+      border: 1.5px solid #CBD5E1;
+      justify-content: space-between;
+    }
+
+    .flip-hint-pill {
+      font-size: 10px;
+      color: #64748B;
+      background: #F1F5F9;
+      padding: 3px 8px;
+      border-radius: 8px;
+      align-self: flex-start;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Floating Micro-Interaction Button from PDF */
+    .floating-relax-bar {
+      position: sticky;
+      bottom: 6px;
+      margin-top: 18px;
+      z-index: 30;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-relax-today {
+      background: #1E293B;
+      color: #FFFFFF;
+      border: 1px solid #334155;
+      padding: 10px 18px;
+      border-radius: 24px;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-relax-today.active-relaxed {
+      background: #059669;
+      border-color: #10B981;
+    }
+
+    /* Clown Alert Modal Overlay */
+    .clown-modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      animation: fadeInOverlay 0.2s ease;
+    }
+
+    .clown-modal-overlay.active {
+      display: flex;
+    }
+
+    @keyframes fadeInOverlay {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .clown-alert-card {
+      width: 100%;
+      background: #FFFFFF;
+      border-radius: 28px;
+      padding: 26px 20px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+      border: 2px solid #FEE2E2;
+    }
+
+    .btn-clown-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #F1F5F9;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: #64748B;
+      cursor: pointer;
+    }
+
+    .clown-icon-huge {
+      font-size: 64px;
+      line-height: 1;
+      margin-bottom: 12px;
+      animation: wobbleClown 2s infinite ease-in-out;
+    }
+
+    @keyframes wobbleClown {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-8deg); }
+      75% { transform: rotate(8deg); }
+    }
+
+    .clown-alert-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #DC2626;
+      margin-bottom: 8px;
+    }
+
+    .clown-alert-desc {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .clown-options-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .clown-option-btn {
+      padding: 12px 14px;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1E293B;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+
+    .clown-option-btn:hover {
+      background: #EFF6FF;
+      border-color: #BFDBFE;
+    }
+
+    /* General Modal Styles */
+    .modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .bottom-sheet {
+      width: 100%;
+      background: #FFFFFF;
+      border-radius: 28px 28px 0 0;
+      padding: 24px 20px 32px 20px;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+      animation: slideUpSheet 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 90%;
+      overflow-y: auto;
+    }
+
+    @keyframes slideUpSheet {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-handle-bar {
+      width: 40px;
+      height: 4px;
+      background: #CBD5E1;
+      border-radius: 2px;
+      margin: 0 auto 16px auto;
+    }
+
+    .modal-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 12px;
+      font-size: 14px;
+      color: #0F172A;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: #3B82F6;
+    }
+
+    .btn-submit-primary {
+      width: 100%;
+      padding: 14px;
+      background: #0F172A;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn-submit-primary:hover {
+      background: #1E293B;
+    }
+
+    /* Toast Notification */
+    .toast-msg {
+      position: absolute;
+      top: 54px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #1E293B;
+      color: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      z-index: 120;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      white-space: nowrap;
+    }
+
+    .toast-msg.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Home Bar */
+    .home-indicator {
+      width: 134px;
+      height: 5px;
+      background: #CBD5E1;
+      border-radius: 100px;
+      margin: 4px auto 6px auto;
+      flex-shrink: 0;
+    }
+
+    /* Skeleton Placeholder Cards for Tabs 3 & 4 */
+    .placeholder-card {
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid #E2E8F0;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+    }
+
+    .placeholder-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0F172A;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .placeholder-desc {
+      font-size: 12px;
+      color: #64748B;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="phone-container">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>16:09</span>
+      <div class="status-icons">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="none">
+          <path d="M1 9.5H3M5 7H7M9 4.5H11M13 1.5H15" stroke="#0F172A" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg width="15" height="11" viewBox="0 0 16 12" fill="#0F172A">
+          <path d="M8 2.5C4.7 2.5 1.8 3.9 0 6.1L8 15.5L16 6.1C14.2 3.9 11.3 2.5 8 2.5Z" transform="translate(0 -2) scale(0.8)"/>
+        </svg>
+        <svg width="24" height="12" viewBox="0 0 25 12" fill="none">
+          <rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#0F172A"/>
+          <rect x="2" y="2" width="16" height="8" rx="2" fill="#0F172A"/>
+          <path d="M23 4V8" stroke="#0F172A" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Top App Bar -->
+    <div class="top-app-bar">
+      <div class="brand-logo-area">
+        <div class="brand-logo-badge">O</div>
+        <div>
+          <div class="brand-logo-text">Oops Money</div>
+        </div>
+        <span class="slogan-tag">Less Oops, More Value</span>
+      </div>
+
+      <div class="api-sync-indicator" title="財政部電子發票載具 API">
+        <div class="sync-dot"></div>
+        <span>載具已同步</span>
+      </div>
+    </div>
+
+    <!-- Toast Message -->
+    <div id="toast" class="toast-msg">已儲存</div>
+
+    <!-- Main Content Area -->
+    <div class="app-content">
+
+      <!-- ============================================== -->
+      <!-- TAB 1: 載具明細 (Vehicle / Receipt Details)       -->
+      <!-- ============================================== -->
+      <section id="view-tab-receipts" class="tab-view active-view">
+        <div class="view-header">
+          <div class="view-title-row">
+            <div>
+              <h2 class="view-title">載具明細</h2>
+              <div class="view-subtitle">每日消費圖鑑 ‧ 載具純文字明細轉化圖片</div>
+            </div>
+            <button class="btn-action-sm" onclick="openAddModal()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              補登明細
+            </button>
+          </div>
+        </div>
+
+        <!-- System Notice Banner from PDF -->
+        <div class="system-notice-card" id="syncDelayNotice">
+          <div class="system-notice-text">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>目前的載具紀錄還在更新中， 是否選擇更新後提醒</span>
+          </div>
+          <button class="btn-notice-dismiss" onclick="dismissNotice()">確認提醒</button>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="filter-chips-row">
+          <button class="filter-chip active" onclick="filterReceipts('all', this)">全部明細 (<span id="count-all">8</span>)</button>
+          <button class="filter-chip" onclick="filterReceipts('pending', this)">尚未完成反思 (<span id="count-pending">3</span>)</button>
+          <button class="filter-chip" onclick="filterReceipts('completed', this)">已完成反思 (<span id="count-completed">5</span>)</button>
+        </div>
+
+        <!-- 每日消費圖片庫 (Gallery Grid) -->
+        <div id="receiptsGallery" class="gallery-grid">
+          <!-- Rendered dynamically by JS -->
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 2: 消費反思 (Consumption Reflection)        -->
+      <!-- ============================================== -->
+      <section id="view-tab-reflection" class="tab-view">
+        <div class="view-header">
+          <div class="view-title-row">
+            <div>
+              <h2 class="view-title">消費反思</h2>
+              <div class="view-subtitle">滑動評分卡與雙面翻轉評分卡</div>
+            </div>
+            <button class="btn-action-sm" style="background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA;" onclick="triggerClownDemo()">
+              🤡 模擬停留3分鐘
+            </button>
+          </div>
+        </div>
+
+        <!-- Sub Toggle: 待反思卡片 VS 已反思圖鑑 -->
+        <div class="reflection-toggle-tabs">
+          <button id="togglePendingBtn" class="reflection-toggle-btn active" onclick="switchReflectionSubView('pending')">
+            待反思卡片 (<span id="sub-pending-badge">3</span>)
+          </button>
+          <button id="toggleCompletedBtn" class="reflection-toggle-btn" onclick="switchReflectionSubView('completed')">
+            雙面翻轉評分卡 (<span id="sub-completed-badge">5</span>)
+          </button>
+        </div>
+
+        <!-- SUBVIEW A: 微反思卡片 (Swipeable Deck) -->
+        <div id="reflectionSubView-pending">
+          <div class="swipe-card-wrapper" id="swipeCardDeck">
+            <!-- Dynamic pending card rendered by JS -->
+          </div>
+        </div>
+
+        <!-- SUBVIEW B: 雙面翻轉評分卡 (3D Flip Cards Grid) -->
+        <div id="reflectionSubView-completed" style="display: none;">
+          <div id="flipCardsGallery" class="flip-grid">
+            <!-- Dynamic flipped cards rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Floating Micro-Interaction Button from PDF -->
+        <div class="floating-relax-bar">
+          <button id="relaxTodayBtn" class="btn-relax-today" onclick="toggleRelaxMode()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+            <span id="relaxBtnLabel">今天想放鬆，暫停今日警示</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 3: 圖表分析 (Framework View)               -->
+      <!-- ============================================== -->
+      <section id="view-tab-charts" class="tab-view">
+        <div class="view-header">
+          <h2 class="view-title">圖表分析</h2>
+          <div class="view-subtitle">消費延遲反思與浪費熱力分析</div>
+        </div>
+
+        <div class="placeholder-card">
+          <div class="placeholder-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2">
+              <path d="M18 20V10M12 20V4M6 20v-6"/>
+            </svg>
+            <span>消費故事積木（例如咖啡塔視覺圖）</span>
+          </div>
+          <div class="placeholder-desc">
+            在月消費上，呈現消費故事積木，例如將咖啡消費繪製成咖啡塔視覺圖，降低認知負荷並創造感官衝擊。
+          </div>
+        </div>
+
+        <div class="placeholder-card">
+          <div class="placeholder-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>浪費熱力分析與歸因分析</span>
+          </div>
+          <div class="placeholder-desc">
+            產出習慣養成圖與歸因分析結果，如：70% 的不值得花費發生於週三深夜外送。
+          </div>
+        </div>
+
+        <div class="placeholder-card">
+          <div class="placeholder-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+            </svg>
+            <span>月終無花費則省下的金額</span>
+          </div>
+          <div class="placeholder-desc">
+            以金額，在月終呈現如無花費則省下的金額，轉化為視覺化數字獎勵在結統計呈現。
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 4: 消費足跡 (Framework View)               -->
+      <!-- ============================================== -->
+      <section id="view-tab-footprint" class="tab-view">
+        <div class="view-header">
+          <h2 class="view-title">消費足跡</h2>
+          <div class="view-subtitle">空間脈絡感測與預警代理</div>
+        </div>
+
+        <div class="placeholder-card">
+          <div class="placeholder-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>實體門市歷史記憶與避雷警示</span>
+          </div>
+          <div class="placeholder-desc">
+            反向運用 GPS 空間脈絡感知。當使用者靠近過往消費過的店家時，待超出時間停留（超過 3 分鐘），系統自動跳出上次的購買紀錄與值得度評價。
+          </div>
+        </div>
+
+        <div class="placeholder-card">
+          <div class="placeholder-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>過往地圖歷史評分卡 (表情符號) 通知</span>
+          </div>
+          <div class="placeholder-desc">
+            顯示當時自己拍下的雷品照片或劃掉的評分卡，並且點選圖片可以翻轉看到當初自己的評語。
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ============================================== -->
+    <!-- FIXED BOTTOM NAVIGATION BAR                    -->
+    <!-- ============================================== -->
+    <nav class="bottom-nav-bar">
+      <button class="nav-tab-btn active" onclick="switchNavTab('receipts', this)">
+        <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="#0F172A" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="3"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="9" y1="21" x2="9" y2="9"/>
+        </svg>
+        <span class="nav-tab-label">載具明細</span>
+      </button>
+
+      <button class="nav-tab-btn" onclick="switchNavTab('reflection', this)">
+        <span id="nav-reflection-badge" class="badge-counter">3</span>
+        <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+        <span class="nav-tab-label">消費反思</span>
+      </button>
+
+      <button class="nav-tab-btn" onclick="switchNavTab('charts', this)">
+        <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        <span class="nav-tab-label">圖表分析</span>
+      </button>
+
+      <button class="nav-tab-btn" onclick="switchNavTab('footprint', this)">
+        <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        <span class="nav-tab-label">消費足跡</span>
+      </button>
+    </nav>
+
+    <!-- ============================================== -->
+    <!-- MODALS AND OVERLAYS                            -->
+    <!-- ============================================== -->
+
+    <!-- 1. Clown Warning Alert Overlay (from PDF Page 12-14) -->
+    <div id="clownModalOverlay" class="clown-modal-overlay">
+      <div class="clown-alert-card">
+        <button class="btn-clown-close" onclick="handleClownCloseClick()">✕</button>
+        <div class="clown-icon-huge">🤡</div>
+        <div class="clown-alert-title">情境預警卡片</div>
+        <div class="clown-alert-desc" id="clownAlertMessage">
+          高信心（高風險）：偵測到您在實體店家停留超過 3 分鐘！上次在此店家消費評估為「浪費」🤡
+        </div>
+
+        <div id="clownOptionsBox" class="clown-options-box" style="display: none;">
+          <div style="font-size: 11px; font-weight: 700; color: #64748B; margin-bottom: 2px;">請選擇處理方式：</div>
+          <button class="clown-option-btn" onclick="chooseClownOption(1)">
+            <span>1、五分鐘後通知</span>
+          </button>
+          <button class="clown-option-btn" onclick="chooseClownOption(2)">
+            <span>2、這間店永不提示</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Human-in-the-Loop Edit Modal (from PDF Page 14-15) -->
+    <div id="editModalBackdrop" class="modal-backdrop">
+      <div class="bottom-sheet">
+        <div class="modal-handle-bar"></div>
+        <div class="modal-header-row">
+          <div class="modal-title">修改品項與分類標籤</div>
+          <button class="btn-notice-dismiss" onclick="closeEditModal()">關閉</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">店家名稱</label>
+          <input type="text" id="editStoreInput" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">品項名稱</label>
+          <input type="text" id="editNameInput" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">分類標籤</label>
+          <input type="text" id="editCategoryInput" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">金額</label>
+          <input type="number" id="editAmountInput" class="form-input">
+        </div>
+
+        <button class="btn-submit-primary" onclick="saveItemEdit()">儲存修改</button>
+      </div>
+    </div>
+
+    <!-- 3. Manual Add Receipt Modal (補登明細 - from PDF Page 15) -->
+    <div id="addModalBackdrop" class="modal-backdrop">
+      <div class="bottom-sheet">
+        <div class="modal-handle-bar"></div>
+        <div class="modal-header-row">
+          <div class="modal-title">補登明細</div>
+          <button class="btn-notice-dismiss" onclick="closeAddModal()">關閉</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">店家名稱</label>
+          <input type="text" id="addStoreInput" class="form-input" placeholder="例如：全家便利商店">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">品項名稱</label>
+          <input type="text" id="addNameInput" class="form-input" placeholder="例如：冰美式咖啡">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">分類標籤</label>
+          <select id="addCategorySelect" class="form-input">
+            <option value="外食">外食</option>
+            <option value="手搖飲">手搖飲</option>
+            <option value="超商零食">超商零食</option>
+            <option value="網購衣服">網購衣服</option>
+            <option value="3C 配件">3C 配件</option>
+            <option value="深夜外送">深夜外送</option>
+            <option value="盲盒">盲盒</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">金額</label>
+          <input type="number" id="addAmountInput" class="form-input" placeholder="金額">
+        </div>
+
+        <button class="btn-submit-primary" onclick="submitManualAdd()">手動新增並生成圖像</button>
+      </div>
+    </div>
+
+    <!-- 4. Two-Way Dialogue Confirmation Modal (雙向對話修復 - from PDF Page 13-14) -->
+    <div id="dialogueModalBackdrop" class="modal-backdrop">
+      <div class="bottom-sheet">
+        <div class="modal-handle-bar"></div>
+        <div class="modal-header-row">
+          <div class="modal-title">雙向對話確認</div>
+          <button class="btn-notice-dismiss" onclick="closeDialogueModal()">關閉</button>
+        </div>
+
+        <div style="background: #EFF6FF; padding: 14px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #BFDBFE;">
+          <div style="font-size: 14px; font-weight: 700; color: #1E40AF; line-height: 1.5;" id="dialoguePromptText">
+            明細只顯示餐費？是否加上餐廳名稱鼎泰豐？
+          </div>
+          <div style="font-size: 11px; color: #3B82F6; margin-top: 4px;">
+            當發票品項名稱模糊或情境不確定時，啟動雙向對話確認，避免 AI 亂下判斷。
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-submit-primary" style="background: #E2E8F0; color: #334155;" onclick="closeDialogueModal()">保留原樣</button>
+          <button class="btn-submit-primary" onclick="confirmDialogueRepair()">確認更新註記</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Home Bar Indicator -->
+    <div class="home-indicator"></div>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    const STORAGE_KEY = 'oops_money_dataset';
+    let currentFilter = 'all';
+    let currentEditingItemId = null;
+    let pendingQueue = [];
+    let isRelaxMode = false;
+
+    // SVG Vector Graphics Library for the 8 Mock Items
+    const SVG_ICONS = {
+      coffee: `<svg width="44" height="44" viewBox="0 0 44 44">
+        <rect width="44" height="44" rx="12" fill="#FEF3C7"/>
+        <path d="M12 16h16v12a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6V16z" fill="#D97706"/>
+        <path d="M28 19h3a3 3 0 0 1 3 3v1a3 3 0 0 1-3 3h-3v-7z" fill="none" stroke="#D97706" stroke-width="2.5"/>
+        <path d="M16 11c0 2-2 2-2 4m5-4c0 2-2 2-2 4m5-4c0 2-2 2-2 4" stroke="#B45309" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>`,
+      dumplings: `<svg width="44" height="44" viewBox="0 0 44 44">
+        <rect width="44" height="44" rx="12" fill="#FEE2E2"/>
+        <ellipse cx="22" cy="24" rx="14" ry="9" fill="#B91C1C" opacity="0.8"/>
+        <ellipse cx="17" cy="22" rx="4" ry="3" fill="#FFFFFF"/>
+        <ellipse cx="27" cy="22" rx="4" ry="3" fill="#FFFFFF"/>
+        <ellipse cx="22" cy="20" rx="4" ry="3" fill="#FFFFFF"/>
+        <path d="M10 24c0 4 6 7 12 7s12-3 12-7" stroke="#7F1D1D" stroke-width="2" fill="none"/>
+      </svg>`,
+      boba: `<svg width="44" height="44" viewBox="0 0 44 44">
+        <rect width="44" height="44" rx="12" fill="#FEF9C3"/>
+        <path d="M14 15h16l-2 18H16L14 15z" fill="#F59E0B" opacity="0.85"/>
+        <line x1="22" y1="9" x2="22" y2="30" stroke="#78350F" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="18" cy="27" r="2.2" fill="#451A03"/>
+        <circle cx="23" cy="28" r="2.2" fill="#451A03"/>
+        <circle cx="26" cy="25" r="2.2" fill="#451A03"/>
+      </svg>`,
+      sweater: `<svg width="44" height="44" viewBox="0 0 44 44">
+        <rect width="44" height="44" rx="12" fill="#FCE7F3"/>
+        <path d="M16 14l6 3 6-3 4 5-3 3v11H15V22l-3-3 4-5z" fill="#DB2777"/>
+        <path d="M19 14a3 3 0 0 0 6 0" stroke="#9D174D" stroke-width="1.8" fill="none"/>
+      </svg>`,
+      soup: `<svg width="44" height="44" viewBox="0 0 44 44">
+        <rect width="44" height="44" rx="12" fill="#FEE2E2"/>
+        <path d="M10 20h24c0 7-5 12-12 12S10 27 10 20z" fill="#DC2626"/>
+        <line x1="10" y1="20" x2="34" y2="20" stroke="#991B1B" stroke-width="2.5"/>
+        <path d="M17 12c0 2-2 2-2 4m7-4c0 2-2 2-2 4m7-4c0 2-2 2-2 4" stroke="#DC2626" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>`,
+      powerbank: `<svg width="44" height="44" viewBox="0 0 44 44">
+        <rect width="44" height="44" rx="12" fill="#E0E7FF"/>
+        <rect x="14" y="12" width="16" height="22" rx="4" fill="#4F46E5"/>
+        <circle cx="22" cy="22" r="4" fill="none" stroke="#A5B4FC" stroke-width="2"/>
+        <line x1="22" y1="15" x2="22" y2="17" stroke="#A5B4FC" stroke-width="2" stroke-linecap="round"/>
+      </svg>`,
+      snack: `<svg width="44" height="44" viewBox="0 0 44 44">
+        <rect width="44" height="44" rx="12" fill="#DCFCE7"/>
+        <rect x="11" y="14" width="13" height="18" rx="2" fill="#16A34A"/>
+        <rect x="26" y="12" width="7" height="20" rx="2" fill="#059669"/>
+        <rect x="28" y="10" width="3" height="3" fill="#047857"/>
+      </svg>`,
+      blindbox: `<svg width="44" height="44" viewBox="0 0 44 44">
+        <rect width="44" height="44" rx="12" fill="#EDE9FE"/>
+        <rect x="13" y="15" width="18" height="17" rx="3" fill="#7C3AED"/>
+        <path d="M13 20h18M22 15v17" stroke="#C4B5FD" stroke-width="2"/>
+        <circle cx="31" cy="13" r="2" fill="#F59E0B"/>
+      </svg>`,
+      default: `<svg width="44" height="44" viewBox="0 0 44 44">
+        <rect width="44" height="44" rx="12" fill="#F1F5F9"/>
+        <rect x="13" y="13" width="18" height="18" rx="3" fill="#64748B"/>
+      </svg>`
+    };
+
+    // Load data from LocalStorage
+    function getStoredData() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      try {
+        return JSON.parse(raw);
+      } catch (e) {
+        return [];
+      }
+    }
+
+    // Save data to LocalStorage
+    function saveData(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      updateCountsAndBadges();
+    }
+
+    // Show toast message
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
+    }
+
+    // Update counters in filters and navigation badge
+    function updateCountsAndBadges() {
+      const items = getStoredData();
+      const pendingCount = items.filter(x => x.status === 'pending').length;
+      const completedCount = items.filter(x => x.status === 'completed').length;
+
+      document.getElementById('count-all').textContent = items.length;
+      document.getElementById('count-pending').textContent = pendingCount;
+      document.getElementById('count-completed').textContent = completedCount;
+
+      document.getElementById('sub-pending-badge').textContent = pendingCount;
+      document.getElementById('sub-completed-badge').textContent = completedCount;
+
+      const navBadge = document.getElementById('nav-reflection-badge');
+      if (pendingCount > 0) {
+        navBadge.style.display = 'inline-block';
+        navBadge.textContent = pendingCount;
+      } else {
+        navBadge.style.display = 'none';
+      }
+    }
+
+    // Tab Navigation Switcher
+    function switchNavTab(tabName, btnElem) {
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active-view'));
+
+      if (btnElem) btnElem.classList.add('active');
+
+      const targetView = document.getElementById('view-tab-' + tabName);
+      if (targetView) targetView.classList.add('active-view');
+
+      if (tabName === 'receipts') {
+        renderReceiptsGallery();
+      } else if (tabName === 'reflection') {
+        renderReflectionDeck();
+        renderFlipCards();
+      }
+    }
+
+    // Filter Receipts in Tab 1
+    function filterReceipts(filter, elem) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      if (elem) elem.classList.add('active');
+      renderReceiptsGallery();
+    }
+
+    // Render Receipts in Tab 1 (每日消費圖片庫)
+    function renderReceiptsGallery() {
+      const items = getStoredData();
+      const container = document.getElementById('receiptsGallery');
+      container.innerHTML = '';
+
+      let filtered = items;
+      if (currentFilter === 'pending') {
+        filtered = items.filter(x => x.status === 'pending');
+      } else if (currentFilter === 'completed') {
+        filtered = items.filter(x => x.status === 'completed');
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state-card">
+            <div style="font-size: 15px; font-weight: 700; color: #64748B;">目前沒有符合此條件的明細</div>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'receipt-card';
+
+        // Rating pill class & text
+        let ratingClass = 'rating-pending';
+        let ratingText = '尚未反思';
+        if (item.status === 'completed') {
+          if (item.rating === '值得') {
+            ratingClass = 'rating-worth';
+            ratingText = '值得';
+          } else if (item.rating === '正常') {
+            ratingClass = 'rating-normal';
+            ratingText = '正常';
+          } else if (item.rating === '浪費') {
+            ratingClass = 'rating-waste';
+            ratingText = '浪費';
+          }
+        }
+
+        const iconSvg = SVG_ICONS[item.imageType] || SVG_ICONS.default;
+
+        let notesHtml = '';
+        if (item.notes && item.notes.trim()) {
+          notesHtml = `<div class="receipt-reflection-preview">「${item.notes}」</div>`;
+        }
+
+        // Special dialogue helper button for Din Tai Fung demo (from PDF Page 13-14)
+        let dialogueActionHtml = '';
+        if (item.name.includes('小籠包') || item.originalRawName === '餐費') {
+          dialogueActionHtml = `
+            <button class="action-btn-link" style="color: #6366F1;" onclick="openDialogueModal('${item.id}')">
+              雙向對話確認
+            </button>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="receipt-card-header">
+            <div class="store-label-group">
+              <span class="store-name">${item.store}</span>
+              <span class="category-badge">${item.category}</span>
+            </div>
+            <span class="rating-badge ${ratingClass}">${ratingText}</span>
+          </div>
+
+          <div class="receipt-card-body">
+            <div class="receipt-image-container">
+              ${iconSvg}
+            </div>
+            <div class="receipt-details-info">
+              <div class="item-title">${item.name}</div>
+              <div class="invoice-time">${item.time} ‧ ${item.invoiceNumber || '載具自動匯入'}</div>
+              <div class="item-amount">$${item.amount.toLocaleString()}</div>
+            </div>
+          </div>
+
+          ${notesHtml}
+
+          <div class="receipt-card-actions">
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <button class="action-btn-secondary" onclick="regenerateImage('${item.id}')" title="若生成圖像出現與實物不符，AI 重新繪製">
+                不像 (AI重繪)
+              </button>
+              <button class="action-btn-secondary" onclick="simulateSelfPhoto('${item.id}')">
+                自行拍照
+              </button>
+              ${dialogueActionHtml}
+            </div>
+            <button class="action-btn-link" onclick="openEditModal('${item.id}')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              修改明細
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // AI Re-generate image feedback ("不像" - PDF Page 15)
+    function regenerateImage(itemId) {
+      showToast('AI 即自動重新抽取發票品項關鍵字並重新繪製');
+    }
+
+    // Self Photo simulation ("使用者可自行拍照" - PDF Page 15)
+    function simulateSelfPhoto(itemId) {
+      showToast('已開啟相機拍照功能並覆蓋圖像卡片');
+    }
+
+    // Dismiss sync notification
+    function dismissNotice() {
+      document.getElementById('syncDelayNotice').style.display = 'none';
+      showToast('已設定：載具紀錄更新完成後推播通知');
+    }
+
+    // ==============================================
+    // TAB 2: 消費反思 LOGIC
+    // ==============================================
+
+    function switchReflectionSubView(subView) {
+      const pendingView = document.getElementById('reflectionSubView-pending');
+      const completedView = document.getElementById('reflectionSubView-completed');
+      const pendingBtn = document.getElementById('togglePendingBtn');
+      const completedBtn = document.getElementById('toggleCompletedBtn');
+
+      if (subView === 'pending') {
+        pendingView.style.display = 'block';
+        completedView.style.display = 'none';
+        pendingBtn.classList.add('active');
+        completedBtn.classList.remove('active');
+        renderReflectionDeck();
+      } else {
+        pendingView.style.display = 'none';
+        completedView.style.display = 'block';
+        pendingBtn.classList.remove('active');
+        completedBtn.classList.add('active');
+        renderFlipCards();
+      }
+    }
+
+    // Render pending swipeable deck
+    function renderReflectionDeck() {
+      const items = getStoredData();
+      pendingQueue = items.filter(x => x.status === 'pending');
+      const container = document.getElementById('swipeCardDeck');
+      container.innerHTML = '';
+
+      if (pendingQueue.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state-card">
+            <div style="font-size: 40px; margin-bottom: 12px;">🎉</div>
+            <div style="font-size: 17px; font-weight: 800; color: #0F172A; margin-bottom: 6px;">
+              本日載具明細已全數完成反思！
+            </div>
+            <div style="font-size: 13px; color: #64748B; margin-bottom: 16px;">
+              所有消費均已完成值得度評估與心理冷卻。
+            </div>
+            <button class="btn-action-sm" style="margin: 0 auto; padding: 10px 18px;" onclick="switchReflectionSubView('completed')">
+              查看雙面翻轉評分卡
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const currentItem = pendingQueue[0];
+      const iconSvg = SVG_ICONS[currentItem.imageType] || SVG_ICONS.default;
+
+      const card = document.createElement('div');
+      card.className = 'swipe-card';
+      card.id = 'activeSwipeCard';
+
+      card.innerHTML = `
+        <div class="swipe-header">
+          <span class="swipe-badge-status">待反思 ‧ 輕量微反思卡片</span>
+          <span style="font-size: 11px; color: #64748B;">剩餘 ${pendingQueue.length} 筆</span>
+        </div>
+
+        <div class="swipe-main-visual">
+          <div style="transform: scale(1.6);">${iconSvg}</div>
+        </div>
+
+        <div class="swipe-info-area">
+          <div class="swipe-store-name">${currentItem.store} ‧ ${currentItem.category}</div>
+          <div class="swipe-item-name">${currentItem.name}</div>
+          <div class="swipe-price">$${currentItem.amount.toLocaleString()}</div>
+        </div>
+
+        <div>
+          <textarea id="reflectionNotesInput" class="swipe-input-box" placeholder="輸入個人消費心得或備註（非必填）..."></textarea>
+        </div>
+
+        <div class="swipe-actions-row">
+          <button class="swipe-btn swipe-btn-waste" onclick="submitCardReflection('${currentItem.id}', '浪費')">
+            <span style="font-size: 15px;">✕</span>
+            <span>浪費</span>
+          </button>
+          <button class="swipe-btn swipe-btn-normal" onclick="submitCardReflection('${currentItem.id}', '正常')">
+            <span style="font-size: 15px;">—</span>
+            <span>正常</span>
+          </button>
+          <button class="swipe-btn swipe-btn-worth" onclick="submitCardReflection('${currentItem.id}', '值得')">
+            <span style="font-size: 15px;">✓</span>
+            <span>值得</span>
+          </button>
+        </div>
+        <div style="font-size: 10px; color: #94A3B8; text-align: center;">滑動卡面標籤快速記錄感受，主導權仍在使用者</div>
+      `;
+
+      container.appendChild(card);
+      bindSwipeGestures(card, currentItem.id);
+    }
+
+    // Touch & Mouse Swipe support for micro-reflection card
+    function bindSwipeGestures(cardElem, itemId) {
+      let startX = 0;
+      let currentX = 0;
+      let isDragging = false;
+
+      function onStart(x) {
+        startX = x;
+        isDragging = true;
+      }
+
+      function onMove(x) {
+        if (!isDragging) return;
+        currentX = x - startX;
+        if (currentX < -25) {
+          cardElem.classList.add('swiping-left');
+          cardElem.classList.remove('swiping-right');
+        } else if (currentX > 25) {
+          cardElem.classList.add('swiping-right');
+          cardElem.classList.remove('swiping-left');
+        } else {
+          cardElem.classList.remove('swiping-left', 'swiping-right');
+        }
+      }
+
+      function onEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        if (currentX < -80) {
+          // Swipe Left -> 浪費
+          submitCardReflection(itemId, '浪費');
+        } else if (currentX > 80) {
+          // Swipe Right -> 值得
+          submitCardReflection(itemId, '值得');
+        } else {
+          cardElem.classList.remove('swiping-left', 'swiping-right');
+        }
+      }
+
+      // Touch events
+      cardElem.addEventListener('touchstart', (e) => onStart(e.touches[0].clientX));
+      cardElem.addEventListener('touchmove', (e) => onMove(e.touches[0].clientX));
+      cardElem.addEventListener('touchend', () => onEnd());
+
+      // Mouse events
+      cardElem.addEventListener('mousedown', (e) => onStart(e.clientX));
+      window.addEventListener('mousemove', (e) => onMove(e.clientX));
+      window.addEventListener('mouseup', () => onEnd());
+    }
+
+    // Submit reflection for current pending card
+    function submitCardReflection(itemId, rating) {
+      const items = getStoredData();
+      const target = items.find(x => x.id === itemId);
+      if (!target) return;
+
+      const notesInput = document.getElementById('reflectionNotesInput');
+      const notes = notesInput ? notesInput.value.trim() : '';
+
+      target.status = 'completed';
+      target.rating = rating;
+      target.notes = notes || (rating === '浪費' ? '衝動購買，事後感覺不值得。' : (rating === '值得' ? '實用且有正面效益。' : '一般日常支出。'));
+
+      saveData(items);
+      showToast(`已評估為「${rating}」並記錄心得`);
+
+      renderReflectionDeck();
+      renderReceiptsGallery();
+      renderFlipCards();
+    }
+
+    // Render 雙面翻轉評分卡 (Flip Cards)
+    function renderFlipCards() {
+      const items = getStoredData();
+      const completed = items.filter(x => x.status === 'completed');
+      const container = document.getElementById('flipCardsGallery');
+      container.innerHTML = '';
+
+      if (completed.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state-card">
+            <div style="font-size: 15px; font-weight: 700; color: #64748B;">尚未有已完成反思的評分卡</div>
+          </div>
+        `;
+        return;
+      }
+
+      completed.forEach(item => {
+        const scene = document.createElement('div');
+        scene.className = 'flip-card-scene';
+
+        const iconSvg = SVG_ICONS[item.imageType] || SVG_ICONS.default;
+
+        let ratingClass = 'rating-normal';
+        if (item.rating === '值得') ratingClass = 'rating-worth';
+        if (item.rating === '浪費') ratingClass = 'rating-waste';
+
+        scene.innerHTML = `
+          <div class="flip-card-inner">
+            <!-- Front Face -->
+            <div class="flip-card-face flip-card-front">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span class="store-name">${item.store}</span>
+                  <span class="category-badge">${item.category}</span>
+                </div>
+                <span class="rating-badge ${ratingClass}">${item.rating}</span>
+              </div>
+
+              <div style="display: flex; gap: 14px; align-items: center;">
+                <div class="receipt-image-container">
+                  ${iconSvg}
+                </div>
+                <div>
+                  <div class="item-title">${item.name}</div>
+                  <div class="invoice-time">${item.time}</div>
+                  <div class="item-amount">$${item.amount.toLocaleString()}</div>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="flip-hint-pill">點擊卡片翻轉查看自我評語 ↻</span>
+                <span style="font-size: 11px; color: #94A3B8;">雙面翻轉評分卡</span>
+              </div>
+            </div>
+
+            <!-- Back Face -->
+            <div class="flip-card-face flip-card-back">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 12px; font-weight: 700; color: #475569;">自我評語與後悔評分</span>
+                <span class="rating-badge ${ratingClass}">${item.rating}</span>
+              </div>
+
+              <div style="background: #FFFFFF; border-radius: 12px; padding: 12px; border: 1px solid #E2E8F0; flex: 1; margin: 8px 0; overflow-y: auto;">
+                <div style="font-size: 13px; color: #1E293B; line-height: 1.5; font-style: italic;">
+                  「${item.notes || '無備註心得'}」
+                </div>
+                <div style="font-size: 11px; color: #64748B; margin-top: 6px;">
+                  消費時間：${item.time}
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="flip-hint-pill">再次點擊翻回正面 ↺</span>
+                <button class="action-btn-link" onclick="event.stopPropagation(); openEditModal('${item.id}')">修改心得</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        scene.addEventListener('click', () => {
+          scene.classList.toggle('is-flipped');
+        });
+
+        container.appendChild(scene);
+      });
+    }
+
+    // Toggle [ 今天想放鬆，暫停今日警示 ]
+    function toggleRelaxMode() {
+      isRelaxMode = !isRelaxMode;
+      const btn = document.getElementById('relaxTodayBtn');
+      const label = document.getElementById('relaxBtnLabel');
+
+      if (isRelaxMode) {
+        btn.classList.add('active-relaxed');
+        label.textContent = '今日警示已暫停（放鬆中）';
+        showToast('已啟動：今天想放鬆，暫停今日警示');
+      } else {
+        btn.classList.remove('active-relaxed');
+        label.textContent = '今天想放鬆，暫停今日警示';
+        showToast('已恢復情境預警推播');
+      }
+    }
+
+    // ==============================================
+    // CLOWN WARNING MODAL (PDF Page 12-14)
+    // ==============================================
+
+    function triggerClownDemo() {
+      const overlay = document.getElementById('clownModalOverlay');
+      const optionsBox = document.getElementById('clownOptionsBox');
+      optionsBox.style.display = 'none';
+      overlay.classList.add('active');
+    }
+
+    // When user clicks the 'x' button on clown card
+    function handleClownCloseClick() {
+      const optionsBox = document.getElementById('clownOptionsBox');
+      optionsBox.style.display = 'flex';
+    }
+
+    function chooseClownOption(option) {
+      const overlay = document.getElementById('clownModalOverlay');
+      overlay.classList.remove('active');
+
+      if (option === 1) {
+        showToast('已設定：五分鐘後通知');
+      } else if (option === 2) {
+        showToast('已設定：這間店永不提示');
+      }
+    }
+
+    // ==============================================
+    // HUMAN-IN-THE-LOOP EDIT MODAL (PDF Page 14-15)
+    // ==============================================
+
+    function openEditModal(itemId) {
+      currentEditingItemId = itemId;
+      const items = getStoredData();
+      const target = items.find(x => x.id === itemId);
+      if (!target) return;
+
+      document.getElementById('editStoreInput').value = target.store;
+      document.getElementById('editNameInput').value = target.name;
+      document.getElementById('editCategoryInput').value = target.category;
+      document.getElementById('editAmountInput').value = target.amount;
+
+      document.getElementById('editModalBackdrop').classList.add('active');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModalBackdrop').classList.remove('active');
+      currentEditingItemId = null;
+    }
+
+    function saveItemEdit() {
+      if (!currentEditingItemId) return;
+      const items = getStoredData();
+      const target = items.find(x => x.id === currentEditingItemId);
+      if (!target) return;
+
+      target.store = document.getElementById('editStoreInput').value.trim() || target.store;
+      target.name = document.getElementById('editNameInput').value.trim() || target.name;
+      target.category = document.getElementById('editCategoryInput').value.trim() || target.category;
+      target.amount = parseInt(document.getElementById('editAmountInput').value) || target.amount;
+
+      saveData(items);
+      closeEditModal();
+      showToast('明細與標籤已成功更新');
+
+      renderReceiptsGallery();
+      renderFlipCards();
+    }
+
+    // ==============================================
+    // MANUAL ADD MODAL (補登明細 - PDF Page 15)
+    // ==============================================
+
+    function openAddModal() {
+      document.getElementById('addModalBackdrop').classList.add('active');
+    }
+
+    function closeAddModal() {
+      document.getElementById('addModalBackdrop').classList.remove('active');
+    }
+
+    function submitManualAdd() {
+      const store = document.getElementById('addStoreInput').value.trim();
+      const name = document.getElementById('addNameInput').value.trim();
+      const category = document.getElementById('addCategorySelect').value;
+      const amount = parseInt(document.getElementById('addAmountInput').value) || 0;
+
+      if (!store || !name || !amount) {
+        alert('請完整填寫店家、品項與金額');
+        return;
+      }
+
+      // Determine image type based on category
+      let imageType = 'default';
+      if (category.includes('外食')) imageType = 'dumplings';
+      if (category.includes('手搖飲')) imageType = 'boba';
+      if (category.includes('超商零食')) imageType = 'snack';
+      if (category.includes('網購衣服')) imageType = 'sweater';
+      if (category.includes('3C')) imageType = 'powerbank';
+      if (category.includes('深夜外送')) imageType = 'soup';
+      if (category.includes('盲盒')) imageType = 'blindbox';
+
+      const items = getStoredData();
+      const newItem = {
+        id: 'item-' + Date.now(),
+        store: store,
+        name: name,
+        category: category,
+        amount: amount,
+        time: '2026-10-14 18:00',
+        invoiceNumber: '手動補登發票',
+        imageType: imageType,
+        status: 'pending',
+        rating: null,
+        notes: ''
+      };
+
+      items.unshift(newItem);
+      saveData(items);
+      closeAddModal();
+      showToast('補登成功！AI 已自動匹配生成圖像卡片');
+
+      // Clear inputs
+      document.getElementById('addStoreInput').value = '';
+      document.getElementById('addNameInput').value = '';
+      document.getElementById('addAmountInput').value = '';
+
+      renderReceiptsGallery();
+      renderReflectionDeck();
+    }
+
+    // ==============================================
+    // TWO-WAY DIALOGUE CONFIRMATION (PDF Page 13-14)
+    // ==============================================
+
+    let activeDialogueItemId = null;
+
+    function openDialogueModal(itemId) {
+      activeDialogueItemId = itemId;
+      document.getElementById('dialogueModalBackdrop').classList.add('active');
+    }
+
+    function closeDialogueModal() {
+      document.getElementById('dialogueModalBackdrop').classList.remove('active');
+      activeDialogueItemId = null;
+    }
+
+    function confirmDialogueRepair() {
+      if (!activeDialogueItemId) return;
+      const items = getStoredData();
+      const target = items.find(x => x.id === activeDialogueItemId);
+      if (target) {
+        target.store = '鼎泰豐';
+        target.name = '小籠包與蝦仁炒飯';
+        saveData(items);
+        showToast('已更新註記：鼎泰豐 ‧ 小籠包與蝦仁炒飯');
+        renderReceiptsGallery();
+        renderFlipCards();
+      }
+      closeDialogueModal();
+    }
+
+    // Initialization on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      // If LocalStorage is not set, redirect or initialize
+      const items = getStoredData();
+      if (!items || items.length === 0) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      updateCountsAndBadges();
+      renderReceiptsGallery();
+      renderReflectionDeck();
+      renderFlipCards();
+    });
+  </script>
+</body>
+</html>
