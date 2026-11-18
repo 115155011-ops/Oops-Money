@@ -626,6 +626,95 @@
       border-color: var(--primary-color);
     }
 
+    /* History Category Filter Pills (值得 / 浪費) */
+    .history-category-filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .history-cat-pill {
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border-card);
+      background: #FFFFFF;
+      color: var(--text-sub);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .history-cat-pill:hover {
+      background: #F9F7F4;
+    }
+
+    .history-cat-pill.active-worth {
+      background: var(--card-mint);
+      color: var(--accent-green);
+      border-color: #A7F3D0;
+      box-shadow: 0 2px 6px rgba(46, 125, 50, 0.12);
+    }
+
+    .history-cat-pill.active-regret {
+      background: var(--tag-red-bg);
+      color: var(--tag-red);
+      border-color: #FECACA;
+      box-shadow: 0 2px 6px rgba(211, 47, 47, 0.12);
+    }
+
+    /* Regret Savings Banner (Appears when 浪費 is clicked) */
+    .regret-savings-banner {
+      background: #FEECE8;
+      border: 1px solid var(--card-peach-border);
+      border-radius: 20px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+      animation: fadeInBanner 0.25s ease-out;
+      text-align: left;
+    }
+
+    @keyframes fadeInBanner {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .regret-savings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .regret-tag-small {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--tag-red);
+      background: rgba(211, 47, 47, 0.08);
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
+
+    .regret-savings-amount {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 4px 0 6px 0;
+    }
+
+    .savings-highlight {
+      color: var(--primary-color);
+      font-size: 22px;
+      font-weight: 900;
+      margin-left: 4px;
+    }
+
+    .regret-savings-desc {
+      font-size: 11px;
+      color: var(--text-sub);
+      line-height: 1.4;
+    }
+
     .history-2x2-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1357,6 +1446,26 @@
             <button class="month-pill active">11 月</button>
           </div>
 
+          <!-- Category Filter Pills (值得 / 浪費) -->
+          <div class="history-category-filters">
+            <button id="pillFilterWorth" class="history-cat-pill" onclick="toggleHistoryCatFilter('worth')">值得</button>
+            <button id="pillFilterRegret" class="history-cat-pill" onclick="toggleHistoryCatFilter('waste')">浪費</button>
+          </div>
+
+          <!-- Regret Savings Banner (appears when 浪費 is clicked) -->
+          <div id="regretSavingsBanner" class="regret-savings-banner" style="display: none;">
+            <div class="regret-savings-header">
+              <span class="regret-tag-small">後悔消費統計</span>
+              <span style="font-size: 11px; color: var(--text-sub);">如無花費則省下的金額</span>
+            </div>
+            <div class="regret-savings-amount">
+              如無花費則省下 <span class="savings-highlight" id="regretSavedAmountText">$0</span>
+            </div>
+            <div class="regret-savings-desc" id="regretSavedCountText">
+              若無此類後悔消費，本月共可省下的總金額。
+            </div>
+          </div>
+
           <div class="history-2x2-grid" id="historyCardsGrid">
             <!-- Dynamic 2x2 grid cards rendered by JS -->
           </div>
@@ -2084,16 +2193,63 @@
     }
 
     // ========================================================
-    // 歷史消費圖鑑 (Figma Screen 3 - with Edit on Flipped Card)
+    // 歷史消費圖鑑 (Figma Screen 3 - with Category Filters & Regret Savings)
     // ========================================================
     let currentlyFlippedCardId = null;
+    let historyCategoryFilter = 'all'; // 'all' (混在一起) | 'worth' (值得) | 'waste' (浪費/後悔)
+
+    function toggleHistoryCatFilter(type) {
+      if (historyCategoryFilter === type) {
+        historyCategoryFilter = 'all'; // 再次點擊取消篩選，回復混在一起
+      } else {
+        historyCategoryFilter = type;
+      }
+      renderHistoryCards();
+    }
 
     function renderHistoryCards() {
       const items = getStoredData();
-      const completed = items.filter(x => x.status === 'completed');
+      let completed = items.filter(x => x.status === 'completed');
       const grid = document.getElementById('historyCardsGrid');
+      const banner = document.getElementById('regretSavingsBanner');
+      const pillWorth = document.getElementById('pillFilterWorth');
+      const pillRegret = document.getElementById('pillFilterRegret');
       if (!grid) return;
       grid.innerHTML = '';
+
+      // 更新分類篩選按鈕狀態
+      if (pillWorth) pillWorth.classList.toggle('active-worth', historyCategoryFilter === 'worth');
+      if (pillRegret) pillRegret.classList.toggle('active-regret', historyCategoryFilter === 'waste');
+
+      // 篩選分類與後悔消費省下金額統計
+      if (historyCategoryFilter === 'waste') {
+        const regretItems = completed.filter(x => x.rating === '後悔' || x.rating === '浪費');
+        const totalRegretAmount = regretItems.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+        if (banner) {
+          banner.style.display = 'block';
+          const amountEl = document.getElementById('regretSavedAmountText');
+          const countEl = document.getElementById('regretSavedCountText');
+          if (amountEl) amountEl.textContent = `$${totalRegretAmount.toLocaleString()}`;
+          if (countEl) countEl.textContent = `本月共有 ${regretItems.length} 筆後悔花費，若無此支出可省下此金額。`;
+        }
+        completed = regretItems;
+      } else if (historyCategoryFilter === 'worth') {
+        if (banner) banner.style.display = 'none';
+        completed = completed.filter(x => x.rating === '值得');
+      } else {
+        // 'all'：不特別點擊時混在一起
+        if (banner) banner.style.display = 'none';
+      }
+
+      if (completed.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; background: #FFFFFF; border-radius: 20px; padding: 28px 20px; text-align: center; border: 1px dashed var(--border-card);">
+            <div style="font-size: 14px; font-weight: 700; color: var(--text-sub);">目前無此分類的花費紀錄</div>
+          </div>
+        `;
+        return;
+      }
 
       const colorSchemes = [
         { bg: 'var(--card-peach-light)', badgeClass: 'badge-regret-text' },
