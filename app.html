@@ -324,28 +324,77 @@
       box-shadow: 0 4px 10px rgba(186, 61, 29, 0.25);
     }
 
-    /* 反思卡片 (Micro Reflection Deck) */
+    /* 反思卡片 Carousel (Swipeable Expense Cards) */
+    .carousel-section {
+      width: 100%;
+      position: relative;
+      margin-bottom: 12px;
+      overflow: hidden;
+      padding: 4px 0 8px 0;
+    }
+
+    .carousel-track-wrapper {
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+      touch-action: pan-y;
+      cursor: grab;
+      padding: 8px 0;
+    }
+
+    .carousel-track-wrapper:active {
+      cursor: grabbing;
+    }
+
+    .carousel-track {
+      display: flex;
+      align-items: center;
+      transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+      will-change: transform;
+    }
+
+    .carousel-card-slide {
+      flex: 0 0 280px;
+      margin: 0 10px;
+      transition: transform 0.32s ease, opacity 0.32s ease, filter 0.32s ease;
+      transform: scale(0.92);
+      opacity: 0.5;
+      filter: grayscale(25%);
+      cursor: pointer;
+    }
+
+    .carousel-card-slide.active-slide {
+      transform: scale(1);
+      opacity: 1;
+      filter: none;
+      cursor: default;
+    }
+
     .reflection-card-box {
       width: 100%;
       background: var(--card-peach);
       border-radius: 26px;
-      padding: 20px;
+      padding: 18px 18px 14px 18px;
       position: relative;
       border: 1px solid var(--card-peach-border);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
       box-shadow: 0 8px 24px rgba(186, 61, 29, 0.06);
-      margin-bottom: 18px;
+    }
+
+    .carousel-card-slide:not(.active-slide) .reflection-card-box {
+      background: #EAE6DF !important;
+      border-color: #D8D4CC !important;
     }
 
     .camera-btn-topright {
       position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 36px;
-      height: 36px;
+      top: 14px;
+      right: 14px;
+      width: 34px;
+      height: 34px;
       background: #FFFFFF;
       border-radius: 50%;
       display: flex;
@@ -358,8 +407,8 @@
     }
 
     .card-illustration-center {
-      width: 140px;
-      height: 130px;
+      width: 130px;
+      height: 110px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -370,11 +419,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
       color: var(--text-main);
       border-top: 1px solid rgba(0, 0, 0, 0.06);
-      padding-top: 14px;
+      padding-top: 12px;
     }
 
     .reflection-card-subinfo {
@@ -383,16 +432,67 @@
       font-weight: 500;
     }
 
+    .carousel-controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 6px;
+      margin-top: 2px;
+    }
+
+    .carousel-dots-group {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .carousel-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #D8D4CC;
+      transition: all 0.25s;
+      cursor: pointer;
+    }
+
+    .carousel-dot.active {
+      width: 18px;
+      border-radius: 4px;
+      background: var(--primary-color);
+    }
+
+    .carousel-nav-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 1px solid var(--border-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-sub);
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      transition: all 0.2s;
+    }
+
+    .carousel-nav-btn:hover {
+      background: #F4F1EA;
+      color: var(--text-main);
+    }
+
     .reflection-action-row {
       display: flex;
       gap: 14px;
       width: 100%;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
 
     .btn-pill-regret {
       flex: 1;
-      padding: 14px;
+      padding: 13px;
       background: #FFFFFF;
       border: 1px solid var(--border-card);
       border-radius: 28px;
@@ -407,12 +507,19 @@
       background: #F9F7F4;
     }
 
+    .btn-pill-regret.active-selected {
+      background: #FDEDEC;
+      color: var(--tag-red);
+      border-color: var(--tag-red);
+      box-shadow: 0 2px 8px rgba(211, 47, 47, 0.15);
+    }
+
     .btn-pill-worth {
       flex: 1;
-      padding: 14px;
+      padding: 13px;
       background: var(--primary-color);
       color: #FFFFFF;
-      border: none;
+      border: 1px solid var(--primary-color);
       border-radius: 28px;
       font-size: 15px;
       font-weight: 700;
@@ -425,13 +532,19 @@
       background: var(--primary-hover);
     }
 
+    .btn-pill-worth.active-selected {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+      box-shadow: 0 4px 14px rgba(46, 125, 50, 0.28);
+    }
+
     .reflection-notes-block {
       width: 100%;
       background: var(--bg-card);
       border: 1px solid var(--border-card);
       border-radius: 20px;
-      padding: 16px;
-      margin-bottom: 18px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
     }
 
     .notes-input-label {
@@ -564,6 +677,57 @@
       transform: rotateY(180deg);
       background: #FFFFFF !important;
       border: 1.5px solid var(--border-card);
+      padding: 12px 14px 10px 14px;
+    }
+
+    .flipped-quote-box {
+      background: #F4F1EA;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 11px;
+      color: var(--text-main);
+      line-height: 1.45;
+      margin: 4px 0 6px 0;
+      border-left: 2px solid var(--border-card);
+      flex: 1;
+      overflow-y: auto;
+      text-align: left;
+    }
+
+    .flipped-bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-top: 2px;
+    }
+
+    .btn-flip-edit-circle {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #D8D4CC;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #333333;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      flex-shrink: 0;
+    }
+
+    .btn-flip-edit-circle:hover {
+      background: var(--primary-color);
+      color: #FFFFFF;
+      transform: scale(1.08);
+    }
+
+    .flipped-back-hint-text {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-align: right;
     }
 
     .card-top-tag-row {
@@ -1153,15 +1317,30 @@
           <button id="toggleBtnHistory" class="capsule-toggle-btn" onclick="switchReflectionMode('history')">歷史圖鑑</button>
         </div>
 
-        <!-- MODE A: 反思卡片 (Swipe / Rate Deck) -->
+        <!-- MODE A: 反思卡片 (Swipe / Rate Deck Carousel) -->
         <div id="modeReflectionCard">
-          <div id="swipeDeckContainer">
-            <!-- Dynamic pending card -->
+          <div class="carousel-section">
+            <div class="carousel-track-wrapper" id="carouselWrapper">
+              <div class="carousel-track" id="carouselTrack">
+                <!-- Dynamically rendered carousel slides -->
+              </div>
+            </div>
+            
+            <div class="carousel-controls-bar">
+              <button class="carousel-nav-btn" onclick="moveCarousel(-1)" title="上一筆花費">‹</button>
+              <div class="carousel-dots-group" id="carouselDots"></div>
+              <button class="carousel-nav-btn" onclick="moveCarousel(1)" title="下一筆花費">›</button>
+            </div>
+          </div>
+
+          <div class="reflection-action-row">
+            <button id="btnRateRegret" class="btn-pill-regret" onclick="rateCurrentCarouselItem('後悔')">後悔</button>
+            <button id="btnRateWorth" class="btn-pill-worth" onclick="rateCurrentCarouselItem('值得')">值得</button>
           </div>
 
           <div class="reflection-notes-block">
             <div class="notes-input-label">心得 (選填)</div>
-            <textarea id="reflectionNotesInput" class="notes-textarea" placeholder="當下的感受⋯"></textarea>
+            <textarea id="reflectionNotesInput" class="notes-textarea" placeholder="當下的感受⋯" oninput="handleNotesInput(this.value)"></textarea>
           </div>
 
           <button id="btnPauseAlerts" class="btn-pause-alerts-pill" onclick="togglePauseAlerts()">
@@ -1422,6 +1601,43 @@
       </div>
     </div>
 
+    <!-- 4. 修改評語與評價 Modal (Requirement 2) -->
+    <div id="editReflectionModal" class="modal-overlay">
+      <div class="bottom-drawer">
+        <div class="drawer-handle"></div>
+        <div class="drawer-header-row">
+          <div class="drawer-title">修改消費評語與評價</div>
+          <button class="btn-close-drawer" onclick="closeEditReflectionModal()">關閉</button>
+        </div>
+
+        <div style="font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 2px;" id="editRefModalTitle">
+          店家品項
+        </div>
+        <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 14px;" id="editRefModalSub">
+          $0 ‧ 時間
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">消費評價</label>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" id="editRefBtnRegret" class="btn-pill-regret" style="border-radius: 20px; padding: 11px;" onclick="selectEditRefRating('後悔')">
+              後悔 (浪費)
+            </button>
+            <button type="button" id="editRefBtnWorth" class="btn-pill-worth" style="border-radius: 20px; padding: 11px;" onclick="selectEditRefRating('值得')">
+              值得
+            </button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">當時評語</label>
+          <textarea id="editRefModalNotes" class="text-input-field" style="min-height: 80px; resize: none; font-size: 13px;" placeholder="輸入新的心得與評語..."></textarea>
+        </div>
+
+        <button class="btn-primary-drawer" onclick="saveEditedReflectionModal()">儲存修改</button>
+      </div>
+    </div>
+
     <!-- Home Indicator -->
     <div class="home-indicator"></div>
   </div>
@@ -1517,7 +1733,7 @@
       if (tabName === 'receipts') {
         renderReceiptsList();
       } else if (tabName === 'reflection') {
-        renderCurrentPendingCard();
+        renderReflectionCarousel();
         renderHistoryCards();
       }
     }
@@ -1562,16 +1778,12 @@
             </div>
           `;
 
-          // Clicking a pending item jumps straight to reflection card!
+          // Clicking an item jumps straight to its card in the reflection carousel!
           row.addEventListener('click', () => {
-            if (item.status === 'pending') {
-              const pendingItems = getStoredData().filter(x => x.status === 'pending');
-              const idx = pendingItems.findIndex(x => x.id === item.id);
-              if (idx !== -1) currentPendingIndex = idx;
-              switchNavTab('reflection', document.querySelectorAll('.nav-tab-item')[1]);
-            } else {
-              showToast(`${item.store}：已完成反思`);
-            }
+            const allItems = getStoredData();
+            const idx = allItems.findIndex(x => x.id === item.id);
+            if (idx !== -1) carouselIndex = idx;
+            switchNavTab('reflection', document.querySelectorAll('.nav-tab-item')[1]);
           });
 
           listGroup.appendChild(row);
@@ -1598,7 +1810,7 @@
         boxHistory.style.display = 'none';
         metaHeader.textContent = '每日 22:00 微反思';
         mainTitle.textContent = '這筆花費值得嗎？';
-        renderCurrentPendingCard();
+        renderReflectionCarousel();
       } else {
         btnCard.classList.remove('active');
         btnHistory.classList.add('active');
@@ -1610,90 +1822,267 @@
       }
     }
 
-    // Render Current Pending Card (Figma Screen 2)
-    function renderCurrentPendingCard() {
-      const items = getStoredData();
-      const pendingItems = items.filter(x => x.status === 'pending');
-      const container = document.getElementById('swipeDeckContainer');
-      container.innerHTML = '';
+    // ========================================================
+    // CAROUSEL LOGIC FOR 反思卡片 (Swipe / Browse expenses)
+    // ========================================================
+    let carouselIndex = 0;
+    let isCarouselDragging = false;
+    let carouselStartX = 0;
+    let carouselCurrentX = 0;
+    let carouselInitialTranslate = 0;
 
-      if (pendingItems.length === 0) {
-        container.innerHTML = `
-          <div style="background: #FFFFFF; border-radius: 24px; padding: 36px 20px; text-align: center; border: 1px dashed var(--border-card); margin-bottom: 18px;">
+    function renderReflectionCarousel() {
+      const items = getStoredData();
+      const track = document.getElementById('carouselTrack');
+      const dotsContainer = document.getElementById('carouselDots');
+      const wrapper = document.getElementById('carouselWrapper');
+      if (!track || !wrapper) return;
+
+      track.innerHTML = '';
+      dotsContainer.innerHTML = '';
+
+      if (items.length === 0) {
+        track.innerHTML = `
+          <div style="background: #FFFFFF; border-radius: 24px; padding: 36px 20px; text-align: center; border: 1px dashed var(--border-card); margin: 0 auto; width: 85%;">
             <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
-            <div style="font-size: 16px; font-weight: 800; color: var(--text-main);">目前沒有待反思的消費</div>
-            <div style="font-size: 12px; color: var(--text-sub); margin-top: 4px;">載具資料皆已完成沉澱與評估。</div>
+            <div style="font-size: 16px; font-weight: 800; color: var(--text-main);">目前沒有消費明細</div>
           </div>
         `;
         return;
       }
 
-      if (currentPendingIndex >= pendingItems.length) {
-        currentPendingIndex = 0;
-      }
+      if (carouselIndex < 0) carouselIndex = 0;
+      if (carouselIndex >= items.length) carouselIndex = items.length - 1;
 
-      const item = pendingItems[currentPendingIndex];
-      const illustrationSvg = SVG_LIB[item.imageType] || SVG_LIB.delivery;
+      items.forEach((item, index) => {
+        const slide = document.createElement('div');
+        slide.className = 'carousel-card-slide' + (index === carouselIndex ? ' active-slide' : '');
+        slide.setAttribute('data-index', index);
 
-      const card = document.createElement('div');
-      card.innerHTML = `
-        <div class="reflection-card-box">
-          <button class="camera-btn-topright" onclick="showToast('已開啟相機拍照功能')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-              <circle cx="12" cy="13" r="4"></circle>
-            </svg>
-          </button>
+        const illustrationSvg = SVG_LIB[item.imageType] || SVG_LIB.delivery;
 
-          <div class="card-illustration-center">
-            ${illustrationSvg}
+        let statusText = '點擊翻面';
+        if (item.status === 'completed' && item.rating) {
+          statusText = `已標記：${item.rating}`;
+        }
+
+        slide.innerHTML = `
+          <div class="reflection-card-box">
+            <button class="camera-btn-topright" onclick="event.stopPropagation(); showToast('已開啟相機拍照功能')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </button>
+
+            <div class="card-illustration-center">
+              ${illustrationSvg}
+            </div>
+
+            <div class="reflection-card-footer">
+              <span>${item.store} $${item.amount.toLocaleString()}</span>
+              <span class="reflection-card-subinfo">${item.timeDay || '週三 01:30'} ‧ ${statusText}</span>
+            </div>
           </div>
+        `;
 
-          <div class="reflection-card-footer">
-            <span>${item.store} $${item.amount.toLocaleString()}</span>
-            <span class="reflection-card-subinfo">${item.timeDay || '週三 01:30'} ‧ 點擊翻面</span>
-          </div>
-        </div>
+        // Clicking a side card directly navigates to it
+        slide.addEventListener('click', () => {
+          if (index !== carouselIndex) {
+            carouselIndex = index;
+            updateCarouselPosition();
+          }
+        });
 
-        <div class="reflection-action-row">
-          <button class="btn-pill-regret" onclick="submitReflection('${item.id}', '後悔')">後悔</button>
-          <button class="btn-pill-worth" onclick="submitReflection('${item.id}', '值得')">值得</button>
-        </div>
-      `;
+        track.appendChild(slide);
 
-      container.appendChild(card);
+        // Create pagination dot
+        const dot = document.createElement('div');
+        dot.className = 'carousel-dot' + (index === carouselIndex ? ' active' : '');
+        dot.onclick = () => {
+          carouselIndex = index;
+          updateCarouselPosition();
+        };
+        dotsContainer.appendChild(dot);
+      });
+
+      // Bind swipe gestures on wrapper (mouse and touch)
+      bindCarouselSwipe(wrapper);
+
+      // Position carousel
+      updateCarouselPosition(false);
     }
 
-    // Submit Reflection for item
-    function submitReflection(itemId, rating) {
+    function updateCarouselPosition(animate = true) {
+      const wrapper = document.getElementById('carouselWrapper');
+      const track = document.getElementById('carouselTrack');
       const items = getStoredData();
-      const target = items.find(x => x.id === itemId);
-      if (!target) return;
+      if (!wrapper || !track || items.length === 0) return;
 
-      const notesField = document.getElementById('reflectionNotesInput');
-      const notes = notesField.value.trim();
+      const containerWidth = wrapper.offsetWidth || 374;
+      const cardWidth = 280;
+      const cardMargin = 10;
+      const cardPitch = cardWidth + (cardMargin * 2); // 300px
 
-      target.status = 'completed';
-      target.rating = rating;
-      target.notes = notes || (rating === '後悔' ? '事後覺得衝動消費。' : '日常必要支出，值得。');
+      // Target translate to center the active card
+      const targetTranslate = (containerWidth / 2) - (carouselIndex * cardPitch + 150);
 
-      notesField.value = '';
+      track.style.transition = animate ? 'transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1)' : 'none';
+      track.style.transform = `translateX(${targetTranslate}px)`;
+
+      // Update slide active classes
+      document.querySelectorAll('.carousel-card-slide').forEach((slide, idx) => {
+        if (idx === carouselIndex) {
+          slide.classList.add('active-slide');
+        } else {
+          slide.classList.remove('active-slide');
+        }
+      });
+
+      // Update dots
+      document.querySelectorAll('.carousel-dot').forEach((dot, idx) => {
+        if (idx === carouselIndex) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+      });
+
+      // Sync inputs and rating buttons for currently centered item
+      syncActiveCarouselControls();
+    }
+
+    function syncActiveCarouselControls() {
+      const items = getStoredData();
+      const currentItem = items[carouselIndex];
+      if (!currentItem) return;
+
+      const notesInput = document.getElementById('reflectionNotesInput');
+      if (notesInput) {
+        notesInput.value = currentItem.notes || '';
+      }
+
+      const btnRegret = document.getElementById('btnRateRegret');
+      const btnWorth = document.getElementById('btnRateWorth');
+
+      if (btnRegret && btnWorth) {
+        btnRegret.classList.remove('active-selected');
+        btnWorth.classList.remove('active-selected');
+
+        if (currentItem.rating === '後悔' || currentItem.rating === '浪費') {
+          btnRegret.classList.add('active-selected');
+        } else if (currentItem.rating === '值得') {
+          btnWorth.classList.add('active-selected');
+        }
+      }
+    }
+
+    function moveCarousel(direction) {
+      const items = getStoredData();
+      const nextIndex = carouselIndex + direction;
+      if (nextIndex >= 0 && nextIndex < items.length) {
+        carouselIndex = nextIndex;
+        updateCarouselPosition(true);
+      }
+    }
+
+    function bindCarouselSwipe(wrapper) {
+      if (wrapper._swipeBound) return;
+      wrapper._swipeBound = true;
+
+      const track = document.getElementById('carouselTrack');
+
+      function onTouchStart(e) {
+        isCarouselDragging = true;
+        carouselStartX = e.touches ? e.touches[0].clientX : e.clientX;
+        carouselCurrentX = carouselStartX;
+
+        const containerWidth = wrapper.offsetWidth || 374;
+        const cardPitch = 300;
+        carouselInitialTranslate = (containerWidth / 2) - (carouselIndex * cardPitch + 150);
+        track.style.transition = 'none';
+      }
+
+      function onTouchMove(e) {
+        if (!isCarouselDragging) return;
+        carouselCurrentX = e.touches ? e.touches[0].clientX : e.clientX;
+        const deltaX = carouselCurrentX - carouselStartX;
+        track.style.transform = `translateX(${carouselInitialTranslate + deltaX}px)`;
+      }
+
+      function onTouchEnd() {
+        if (!isCarouselDragging) return;
+        isCarouselDragging = false;
+        const deltaX = carouselCurrentX - carouselStartX;
+        const items = getStoredData();
+
+        if (deltaX < -38 && carouselIndex < items.length - 1) {
+          carouselIndex++;
+        } else if (deltaX > 38 && carouselIndex > 0) {
+          carouselIndex--;
+        }
+        updateCarouselPosition(true);
+      }
+
+      // Touch listeners
+      wrapper.addEventListener('touchstart', onTouchStart, { passive: true });
+      wrapper.addEventListener('touchmove', onTouchMove, { passive: true });
+      wrapper.addEventListener('touchend', onTouchEnd);
+
+      // Mouse listeners
+      wrapper.addEventListener('mousedown', onTouchStart);
+      window.addEventListener('mousemove', onTouchMove);
+      window.addEventListener('mouseup', onTouchEnd);
+    }
+
+    // Rate the currently centered item in the carousel
+    function rateCurrentCarouselItem(rating) {
+      const items = getStoredData();
+      const currentItem = items[carouselIndex];
+      if (!currentItem) return;
+
+      const notesInput = document.getElementById('reflectionNotesInput');
+      const notes = notesInput ? notesInput.value.trim() : '';
+
+      currentItem.status = 'completed';
+      currentItem.rating = rating;
+      currentItem.notes = notes || (rating === '後悔' ? '事後覺得衝動消費。' : '日常必要支出，值得。');
+
       saveData(items);
       showToast(`已標記為「${rating}」`);
 
-      renderCurrentPendingCard();
+      // Update slide subtitle
+      const activeSlide = document.querySelector(`.carousel-card-slide[data-index="${carouselIndex}"] .reflection-card-subinfo`);
+      if (activeSlide) {
+        activeSlide.textContent = `${currentItem.timeDay || '週三 01:30'} ‧ 已標記：${rating}`;
+      }
+
+      syncActiveCarouselControls();
       renderReceiptsList();
       renderHistoryCards();
     }
 
-    // Render 2x2 Grid in 歷史消費圖鑑 (Figma Screen 3)
+    // Live update notes on typing
+    function handleNotesInput(val) {
+      const items = getStoredData();
+      const currentItem = items[carouselIndex];
+      if (!currentItem) return;
+      currentItem.notes = val;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    // ========================================================
+    // 歷史消費圖鑑 (Figma Screen 3 - with Edit on Flipped Card)
+    // ========================================================
+    let currentlyFlippedCardId = null;
+
     function renderHistoryCards() {
       const items = getStoredData();
       const completed = items.filter(x => x.status === 'completed');
       const grid = document.getElementById('historyCardsGrid');
+      if (!grid) return;
       grid.innerHTML = '';
 
-      // Default visual configs from Figma
       const colorSchemes = [
         { bg: 'var(--card-peach-light)', badgeClass: 'badge-regret-text' },
         { bg: 'var(--card-mint)', badgeClass: 'badge-worth-text' },
@@ -1710,6 +2099,11 @@
 
         const scene = document.createElement('div');
         scene.className = 'flip-card-container';
+        scene.setAttribute('data-id', item.id);
+
+        if (currentlyFlippedCardId === item.id) {
+          scene.classList.add('is-flipped');
+        }
 
         scene.innerHTML = `
           <div class="flip-card-inner">
@@ -1729,26 +2123,104 @@
               </div>
             </div>
 
-            <!-- Back Face (Notes) -->
+            <!-- Back Face (Notes + Bottom Left Edit Button) -->
             <div class="flip-card-face flip-face-back">
               <div class="card-top-tag-row">
                 <span style="font-size: 10px; color: var(--text-sub); font-weight: 700;">當時評語</span>
                 <span class="card-status-badge ${badgeClass}">${ratingLabel}</span>
               </div>
-              <div style="font-size: 11px; color: var(--text-main); line-height: 1.4; margin: 4px 0; overflow-y: auto;">
+
+              <div class="flipped-quote-box">
                 「${item.notes || '無備註'}」
               </div>
-              <div style="font-size: 9px; color: var(--text-muted); text-align: right;">再次點擊翻回</div>
+
+              <!-- Bottom Row with Edit Button on Left and Flip hint on Right -->
+              <div class="flipped-bottom-row">
+                <button class="btn-flip-edit-circle" onclick="event.stopPropagation(); openEditReflectionModal('${item.id}')" title="修改評語與評價">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                  </svg>
+                </button>
+                <span class="flipped-back-hint-text">再次點擊翻回</span>
+              </div>
             </div>
           </div>
         `;
 
         scene.addEventListener('click', () => {
           scene.classList.toggle('is-flipped');
+          if (scene.classList.contains('is-flipped')) {
+            currentlyFlippedCardId = item.id;
+          } else if (currentlyFlippedCardId === item.id) {
+            currentlyFlippedCardId = null;
+          }
         });
 
         grid.appendChild(scene);
       });
+    }
+
+    // ========================================================
+    // EDIT REFLECTION MODAL (Requirement 2)
+    // ========================================================
+    let currentEditRefId = null;
+    let currentEditRefRating = '值得';
+
+    function openEditReflectionModal(itemId) {
+      currentEditRefId = itemId;
+      const items = getStoredData();
+      const target = items.find(x => x.id === itemId);
+      if (!target) return;
+
+      document.getElementById('editRefModalTitle').textContent = `${target.store} ‧ ${target.name || ''}`;
+      document.getElementById('editRefModalSub').textContent = `$${target.amount.toLocaleString()} ‧ ${target.timeFormatted || target.timeDay || ''}`;
+      document.getElementById('editRefModalNotes').value = target.notes || '';
+
+      const rating = (target.rating === '後悔' || target.rating === '浪費') ? '後悔' : '值得';
+      selectEditRefRating(rating);
+
+      document.getElementById('editReflectionModal').classList.add('active');
+    }
+
+    function closeEditReflectionModal() {
+      document.getElementById('editReflectionModal').classList.remove('active');
+      currentEditRefId = null;
+    }
+
+    function selectEditRefRating(rating) {
+      currentEditRefRating = rating;
+      const btnRegret = document.getElementById('editRefBtnRegret');
+      const btnWorth = document.getElementById('editRefBtnWorth');
+
+      if (rating === '後悔' || rating === '浪費') {
+        btnRegret.classList.add('active-selected');
+        btnWorth.classList.remove('active-selected');
+      } else {
+        btnWorth.classList.add('active-selected');
+        btnRegret.classList.remove('active-selected');
+      }
+    }
+
+    function saveEditedReflectionModal() {
+      if (!currentEditRefId) return;
+      const items = getStoredData();
+      const target = items.find(x => x.id === currentEditRefId);
+      if (!target) return;
+
+      const notes = document.getElementById('editRefModalNotes').value.trim();
+      target.rating = currentEditRefRating;
+      target.notes = notes || (currentEditRefRating === '後悔' ? '事後覺得衝動消費。' : '日常必要支出，值得。');
+      target.status = 'completed';
+
+      saveData(items);
+      closeEditReflectionModal();
+      showToast('評語與評價已更新');
+
+      currentlyFlippedCardId = target.id;
+      renderHistoryCards();
+      renderReflectionCarousel();
+      renderReceiptsList();
     }
 
     // Toggle Pause Alerts button (今天想放鬆，暫停今日警示)
