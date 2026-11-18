@@ -1823,7 +1823,7 @@
     }
 
     // ========================================================
-    // CAROUSEL LOGIC FOR 反思卡片 (Swipe / Browse expenses)
+    // CAROUSEL LOGIC FOR 反思卡片 (Swipe / Browse PENDING only)
     // ========================================================
     let carouselIndex = 0;
     let isCarouselDragging = false;
@@ -1832,10 +1832,13 @@
     let carouselInitialTranslate = 0;
 
     function renderReflectionCarousel() {
-      const items = getStoredData();
+      const allItems = getStoredData();
+      const items = allItems.filter(x => x.status === 'pending');
       const track = document.getElementById('carouselTrack');
       const dotsContainer = document.getElementById('carouselDots');
       const wrapper = document.getElementById('carouselWrapper');
+      const actionRow = document.querySelector('.reflection-action-row');
+      const notesBlock = document.querySelector('.reflection-notes-block');
       if (!track || !wrapper) return;
 
       track.innerHTML = '';
@@ -1845,11 +1848,17 @@
         track.innerHTML = `
           <div style="background: #FFFFFF; border-radius: 24px; padding: 36px 20px; text-align: center; border: 1px dashed var(--border-card); margin: 0 auto; width: 85%;">
             <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
-            <div style="font-size: 16px; font-weight: 800; color: var(--text-main);">目前沒有消費明細</div>
+            <div style="font-size: 16px; font-weight: 800; color: var(--text-main);">目前沒有待反思的商品</div>
+            <div style="font-size: 12px; color: var(--text-sub); margin-top: 4px;">所有消費皆已完成評價與沉澱。</div>
           </div>
         `;
+        if (actionRow) actionRow.style.display = 'none';
+        if (notesBlock) notesBlock.style.display = 'none';
         return;
       }
+
+      if (actionRow) actionRow.style.display = 'flex';
+      if (notesBlock) notesBlock.style.display = 'block';
 
       if (carouselIndex < 0) carouselIndex = 0;
       if (carouselIndex >= items.length) carouselIndex = items.length - 1;
@@ -1860,11 +1869,6 @@
         slide.setAttribute('data-index', index);
 
         const illustrationSvg = SVG_LIB[item.imageType] || SVG_LIB.delivery;
-
-        let statusText = '點擊翻面';
-        if (item.status === 'completed' && item.rating) {
-          statusText = `已標記：${item.rating}`;
-        }
 
         slide.innerHTML = `
           <div class="reflection-card-box">
@@ -1881,7 +1885,7 @@
 
             <div class="reflection-card-footer">
               <span>${item.store} $${item.amount.toLocaleString()}</span>
-              <span class="reflection-card-subinfo">${item.timeDay || '週三 01:30'} ‧ ${statusText}</span>
+              <span class="reflection-card-subinfo">${item.timeDay || '週三 01:30'} ‧ 點擊翻面</span>
             </div>
           </div>
         `;
@@ -1916,7 +1920,7 @@
     function updateCarouselPosition(animate = true) {
       const wrapper = document.getElementById('carouselWrapper');
       const track = document.getElementById('carouselTrack');
-      const items = getStoredData();
+      const items = getStoredData().filter(x => x.status === 'pending');
       if (!wrapper || !track || items.length === 0) return;
 
       const containerWidth = wrapper.offsetWidth || 374;
@@ -1953,32 +1957,31 @@
     }
 
     function syncActiveCarouselControls() {
-      const items = getStoredData();
+      const items = getStoredData().filter(x => x.status === 'pending');
       const currentItem = items[carouselIndex];
-      if (!currentItem) return;
-
       const notesInput = document.getElementById('reflectionNotesInput');
+      const btnRegret = document.getElementById('btnRateRegret');
+      const btnWorth = document.getElementById('btnRateWorth');
+
+      if (!currentItem) {
+        if (notesInput) notesInput.value = '';
+        if (btnRegret) btnRegret.classList.remove('active-selected');
+        if (btnWorth) btnWorth.classList.remove('active-selected');
+        return;
+      }
+
       if (notesInput) {
         notesInput.value = currentItem.notes || '';
       }
 
-      const btnRegret = document.getElementById('btnRateRegret');
-      const btnWorth = document.getElementById('btnRateWorth');
-
       if (btnRegret && btnWorth) {
         btnRegret.classList.remove('active-selected');
         btnWorth.classList.remove('active-selected');
-
-        if (currentItem.rating === '後悔' || currentItem.rating === '浪費') {
-          btnRegret.classList.add('active-selected');
-        } else if (currentItem.rating === '值得') {
-          btnWorth.classList.add('active-selected');
-        }
       }
     }
 
     function moveCarousel(direction) {
-      const items = getStoredData();
+      const items = getStoredData().filter(x => x.status === 'pending');
       const nextIndex = carouselIndex + direction;
       if (nextIndex >= 0 && nextIndex < items.length) {
         carouselIndex = nextIndex;
@@ -2014,7 +2017,7 @@
         if (!isCarouselDragging) return;
         isCarouselDragging = false;
         const deltaX = carouselCurrentX - carouselStartX;
-        const items = getStoredData();
+        const items = getStoredData().filter(x => x.status === 'pending');
 
         if (deltaX < -38 && carouselIndex < items.length - 1) {
           carouselIndex++;
@@ -2037,38 +2040,47 @@
 
     // Rate the currently centered item in the carousel
     function rateCurrentCarouselItem(rating) {
-      const items = getStoredData();
-      const currentItem = items[carouselIndex];
+      const allItems = getStoredData();
+      const pendingItems = allItems.filter(x => x.status === 'pending');
+      const currentItem = pendingItems[carouselIndex];
       if (!currentItem) return;
 
       const notesInput = document.getElementById('reflectionNotesInput');
       const notes = notesInput ? notesInput.value.trim() : '';
 
-      currentItem.status = 'completed';
-      currentItem.rating = rating;
-      currentItem.notes = notes || (rating === '後悔' ? '事後覺得衝動消費。' : '日常必要支出，值得。');
-
-      saveData(items);
-      showToast(`已標記為「${rating}」`);
-
-      // Update slide subtitle
-      const activeSlide = document.querySelector(`.carousel-card-slide[data-index="${carouselIndex}"] .reflection-card-subinfo`);
-      if (activeSlide) {
-        activeSlide.textContent = `${currentItem.timeDay || '週三 01:30'} ‧ 已標記：${rating}`;
+      const target = allItems.find(x => x.id === currentItem.id);
+      if (target) {
+        target.status = 'completed';
+        target.rating = rating;
+        target.notes = notes || (rating === '後悔' ? '事後覺得衝動消費。' : '日常必要支出，值得。');
       }
 
-      syncActiveCarouselControls();
+      saveData(allItems);
+      showToast(`已標記為「${rating}」`);
+
+      // The rated item leaves the pending carousel; adjust index to stay valid
+      const remainingPending = allItems.filter(x => x.status === 'pending');
+      if (carouselIndex >= remainingPending.length) {
+        carouselIndex = Math.max(0, remainingPending.length - 1);
+      }
+
+      renderReflectionCarousel();
       renderReceiptsList();
       renderHistoryCards();
     }
 
-    // Live update notes on typing
+    // Live update notes on typing for current pending item
     function handleNotesInput(val) {
-      const items = getStoredData();
-      const currentItem = items[carouselIndex];
+      const allItems = getStoredData();
+      const pendingItems = allItems.filter(x => x.status === 'pending');
+      const currentItem = pendingItems[carouselIndex];
       if (!currentItem) return;
-      currentItem.notes = val;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+
+      const target = allItems.find(x => x.id === currentItem.id);
+      if (target) {
+        target.notes = val;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(allItems));
+      }
     }
 
     // ========================================================
